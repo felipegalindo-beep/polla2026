@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Polla Mundial FIFA 2026</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#1D9E75;--verde-l:#E1F5EE;--rojo:#E24B4A;--rojo-l:#FCEBEB;
+  --oro:#BA7517;--oro-l:#FAEEDA;--azul:#185FA5;--azul-l:#E6F1FB;
+  --gris:#f5f5f3;--borde:#e0e0db;--txt:#1a1a18;--txt2:#777770;
+  --radius:10px;--radius-sm:7px;
+}
+html,body{height:100%;background:#f0ede8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;color:var(--txt)}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:#fff;position:relative;display:flex;flex-direction:column}
+.screen{display:none;flex-direction:column;flex:1;padding:1rem}
+.screen.active{display:flex}
+
+/* HEADER */
+.top-bar{background:#fff;border-bottom:1px solid var(--borde);padding:.75rem 1rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.top-title{font-size:15px;font-weight:600;color:var(--txt)}
+.top-sub{font-size:11px;color:var(--txt2)}
+.prog-bar{height:3px;background:var(--borde)}
+.prog-fill{height:3px;background:var(--verde);transition:width .4s}
+
+/* WELCOME */
+.wcard{background:var(--gris);border-radius:var(--radius);padding:1.25rem;margin-bottom:.75rem}
+.wcard h1{font-size:20px;font-weight:700;margin-bottom:.4rem}
+.wcard p{font-size:13px;color:var(--txt2);line-height:1.6}
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:.75rem}
+.rule{background:#fff;border:1px solid var(--borde);border-radius:var(--radius-sm);padding:.65rem;text-align:center}
+.rule-n{font-size:20px;font-weight:700;color:var(--verde)}
+.rule-l{font-size:11px;color:var(--txt2);margin-top:2px}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:.4rem}
+input[type=text]{width:100%;padding:.75rem 1rem;border:1.5px solid var(--borde);border-radius:var(--radius-sm);font-size:15px;background:#fff;color:var(--txt);outline:none}
+input[type=text]:focus{border-color:var(--azul)}
+.url-saved{font-size:11px;color:var(--verde);margin-top:4px;display:none}
+.btn{width:100%;padding:.85rem;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;margin-top:.5rem}
+.btn-green{background:var(--verde);color:#fff}
+.btn-blue{background:var(--azul);color:#fff}
+.btn-gray{background:var(--gris);color:var(--txt);border:1px solid var(--borde)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+
+/* TABS */
+.tabs{display:flex;gap:5px;overflow-x:auto;padding:.75rem 1rem .5rem;background:#fff;border-bottom:1px solid var(--borde);scrollbar-width:none;position:sticky;top:57px;z-index:9}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:.3rem .65rem;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:var(--gris);color:var(--txt2);border:1px solid var(--borde);flex-shrink:0;transition:all .15s}
+.tab.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+.tab.done{background:var(--verde-l);color:var(--verde);border-color:var(--verde)}
+
+/* PARTIDO */
+.partido-wrap{background:var(--gris);border-radius:var(--radius);padding:1rem;margin-bottom:.75rem}
+.partido-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--txt2);margin-bottom:.75rem}
+.teams-row{display:grid;grid-template-columns:1fr 80px 1fr;align-items:center;gap:4px;margin-bottom:1rem}
+.team{text-align:center}
+.flag{font-size:32px;line-height:1;margin-bottom:4px}
+.tname{font-size:12px;font-weight:600;line-height:1.2}
+.score-display{display:flex;align-items:center;justify-content:center;gap:6px}
+.score-box{width:56px;height:56px;border:2.5px solid var(--borde);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;cursor:pointer;background:#fff;transition:all .15s;color:var(--txt2)}
+.score-box.sel{border-color:var(--azul);background:var(--azul-l);color:var(--azul)}
+.score-box.filled{color:var(--txt)}
+.dash{font-size:16px;color:var(--txt2);font-weight:600}
+
+/* PILLS */
+.pills{display:flex;gap:6px;justify-content:center;margin-bottom:.5rem}
+.pill{padding:.3rem .9rem;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--borde);color:var(--txt2);background:#fff;cursor:pointer;transition:all .15s}
+.pill.active{background:var(--azul);color:#fff;border-color:var(--azul)}
+
+/* NUMPAD */
+.np-hint{text-align:center;font-size:12px;color:var(--txt2);margin-bottom:.4rem}
+.np-hint strong{color:var(--azul)}
+.numpad{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.np-btn{padding:.85rem .4rem;border:1.5px solid var(--borde);border-radius:var(--radius-sm);font-size:22px;font-weight:600;background:#fff;color:var(--txt);cursor:pointer;text-align:center;transition:background .1s;-webkit-tap-highlight-color:transparent}
+.np-btn:active{background:var(--gris)}
+.np-del{font-size:16px;color:var(--rojo);border-color:var(--rojo-l)}
+.np-ok{background:var(--verde);color:#fff;border-color:var(--verde);font-size:14px}
+
+/* NAV */
+.nav-row{display:flex;gap:6px;margin-top:.75rem}
+.nav-btn{flex:1;padding:.7rem;border:1.5px solid var(--borde);border-radius:var(--radius-sm);font-size:14px;font-weight:600;background:#fff;color:var(--txt);cursor:pointer}
+.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.nav-btn.next{background:var(--azul);color:#fff;border-color:var(--azul)}
+.nav-btn.gold{background:var(--oro);color:#fff;border-color:var(--oro)}
+
+/* CLASIFICACION */
+.clasif-wrap{background:var(--gris);border-radius:var(--radius);padding:.75rem;margin-top:.25rem}
+.clasif-title{font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:.4rem}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:.3rem .4rem;text-align:left;color:var(--txt2);font-weight:500;border-bottom:1px solid var(--borde)}
+td{padding:.35rem .4rem;border-bottom:1px solid var(--borde)}
+tr.clasif td{color:var(--verde);font-weight:600}
+.pb{display:inline-flex;width:18px;height:18px;border-radius:50%;font-size:10px;font-weight:700;align-items:center;justify-content:center}
+.p1{background:#FAC775;color:#412402}.p2{background:#D3D1C7;color:#2C2C2A}
+.p3{background:#F5C4B3;color:#4A1B0C}.p4{background:var(--gris);color:var(--txt2);border:1px solid var(--borde)}
+
+/* RESUMEN */
+.rg{background:var(--gris);border-radius:var(--radius);margin-bottom:.6rem;overflow:hidden}
+.rg-head{display:flex;justify-content:space-between;align-items:center;padding:.65rem 1rem;cursor:pointer;user-select:none}
+.rg-head span:first-child{font-size:13px;font-weight:700}
+.rg-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.badge-ok{background:var(--verde-l);color:var(--verde)}
+.badge-pen{background:var(--oro-l);color:var(--oro)}
+.rg-body{padding:.25rem .75rem .5rem;display:none}
+.rg-body.open{display:block}
+.rg-row{display:flex;justify-content:space-between;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--borde);font-size:12px}
+.rg-row:last-child{border:none}
+.chip{padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer}
+.chip-ok{background:var(--azul-l);color:var(--azul)}
+.chip-pen{background:var(--gris);color:var(--txt2);border:1px solid var(--borde)}
+
+/* ENVIO */
+.send-card{background:var(--gris);border-radius:var(--radius);padding:1.25rem;margin-bottom:.75rem;text-align:center}
+.send-icon{font-size:44px;margin-bottom:.5rem}
+.send-card h2{font-size:17px;font-weight:700;margin-bottom:.3rem}
+.send-card p{font-size:13px;color:var(--txt2);line-height:1.6}
+.status{padding:.65rem 1rem;border-radius:var(--radius-sm);font-size:13px;margin-top:.6rem;display:none;text-align:left}
+.st-ok{display:block;background:var(--verde-l);color:var(--verde)}
+.st-err{display:block;background:var(--rojo-l);color:var(--rojo)}
+.st-send{display:block;background:var(--azul-l);color:var(--azul)}
+.code-block{background:#1a1a1a;color:#a8ff78;border-radius:var(--radius-sm);padding:.75rem;font-size:11px;font-family:monospace;overflow-x:auto;white-space:pre;text-align:left;margin:.5rem 0;line-height:1.5}
+.section-title{font-size:13px;font-weight:700;margin:.75rem 0 .4rem}
+
+/* CONFETTI / SUCCESS */
+.success-screen{text-align:center;padding:2rem 1rem;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.success-screen h2{font-size:22px;font-weight:700;margin:.75rem 0 .4rem}
+.success-screen p{font-size:14px;color:var(--txt2);line-height:1.6}
+.trophy{font-size:64px;animation:bounce .6s ease infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- WELCOME -->
+<div class="screen active" id="sc-welcome">
+  <div style="padding:.5rem 0 1rem">
+    <div style="text-align:center;font-size:36px;margin-bottom:.5rem">⚽</div>
+    <div class="wcard">
+      <h1>Polla Mundial 2026</h1>
+      <p>Predice los 72 partidos de la fase de grupos. Tus datos se guardan automáticamente en este dispositivo.</p>
+      <div class="rules">
+        <div class="rule"><div class="rule-n">5 pts</div><div class="rule-l">Marcador exacto</div></div>
+        <div class="rule"><div class="rule-n">3 pts</div><div class="rule-l">Ganador / empate</div></div>
+        <div class="rule"><div class="rule-n">360</div><div class="rule-l">Máx. partidos</div></div>
+        <div class="rule"><div class="rule-n">180</div><div class="rule-l">Máx. posiciones</div></div>
+      </div>
+    </div>
+    <div class="wcard">
+      <label>Tu nombre</label>
+      <input type="text" id="inp-nombre" placeholder="Ej: Juan Pérez" oninput="checkStart()">
+      <div class="section-title" style="margin-top:.75rem">URL del Web App (Google Sheets)</div>
+      <input type="text" id="inp-url" placeholder="https://script.google.com/macros/s/..." oninput="saveUrl()">
+      <div class="url-saved" id="url-saved">URL guardada</div>
+      <button class="btn btn-green" id="btn-start" onclick="startApp()" disabled>Comenzar →</button>
+      <button class="btn btn-gray" onclick="resetApp()" style="margin-top:.4rem;font-size:13px">Borrar datos guardados</button>
+    </div>
+  </div>
+</div>
+
+<!-- GRUPOS -->
+<div class="screen" id="sc-grupos">
+  <div class="top-bar">
+    <div><div class="top-title" id="top-title">Grupo A</div><div class="top-sub" id="top-sub"></div></div>
+    <div style="display:flex;gap:6px">
+      <button class="nav-btn" style="width:auto;padding:.4rem .75rem;font-size:12px" onclick="irResumen()">Resumen</button>
+    </div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div style="padding:.75rem;overflow-y:auto;flex:1">
+    <div class="partido-wrap">
+      <div class="partido-meta">
+        <span id="pt-num"></span><span id="pt-ciudad"></span>
+      </div>
+      <div class="teams-row">
+        <div class="team"><div class="flag" id="fl1"></div><div class="tname" id="tn1"></div></div>
+        <div class="score-display">
+          <div class="score-box" id="sb1" onclick="selTeam(1)">—</div>
+          <span class="dash">:</span>
+          <div class="score-box" id="sb2" onclick="selTeam(2)">—</div>
+        </div>
+        <div class="team"><div class="flag" id="fl2"></div><div class="tname" id="tn2"></div></div>
+      </div>
+      <div class="pills">
+        <div class="pill active" id="pl1" onclick="selTeam(1)">Goles equipo 1</div>
+        <div class="pill" id="pl2" onclick="selTeam(2)">Goles equipo 2</div>
+      </div>
+      <div class="np-hint">Ingresando goles de <strong id="np-team">—</strong></div>
+      <div class="numpad" id="numpad"></div>
+      <div class="nav-row">
+        <button class="nav-btn" id="btn-prev" onclick="navP(-1)">← Ant.</button>
+        <button class="nav-btn next" id="btn-next" onclick="navP(1)">Siguiente →</button>
+      </div>
+    </div>
+    <div class="clasif-wrap">
+      <div class="clasif-title">Clasificación del grupo con tus predicciones</div>
+      <table><thead><tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>Pts</th></tr></thead>
+      <tbody id="clasif-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- RESUMEN -->
+<div class="screen" id="sc-resumen">
+  <div class="top-bar">
+    <div><div class="top-title">Resumen</div><div class="top-sub" id="res-sub"></div></div>
+    <button class="nav-btn" style="width:auto;padding:.4rem .75rem;font-size:12px" onclick="showSc('sc-grupos')">← Editar</button>
+  </div>
+  <div style="padding:.75rem;overflow-y:auto;flex:1">
+    <div id="res-container"></div>
+    <button class="btn btn-blue" onclick="showSc('sc-send')" style="margin-top:.5rem">Enviar predicciones →</button>
+  </div>
+</div>
+
+<!-- ENVIO -->
+<div class="screen" id="sc-send">
+  <div class="top-bar">
+    <div><div class="top-title">Enviar</div></div>
+    <button class="nav-btn" style="width:auto;padding:.4rem .75rem;font-size:12px" onclick="showSc('sc-resumen')">← Volver</button>
+  </div>
+  <div style="padding:.75rem;overflow-y:auto;flex:1">
+    <div class="send-card">
+      <div class="send-icon">📤</div>
+      <h2 id="send-nombre"></h2>
+      <p id="send-stats"></p>
+      <div class="status" id="send-status"></div>
+      <button class="btn btn-green" id="btn-enviar" onclick="enviar()" style="margin-top:.75rem">Enviar a Google Sheets</button>
+    </div>
+    <div class="section-title">Código para el administrador</div>
+    <p style="font-size:12px;color:var(--txt2);margin-bottom:.4rem">Pega en <strong>script.google.com</strong> → Deploy → Web app → Anyone</p>
+    <div class="code-block" id="gas-code"></div>
+    <button class="btn btn-gray" onclick="copyGas()" style="margin-top:.25rem">Copiar código</button>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="screen" id="sc-success">
+  <div class="success-screen">
+    <div class="trophy">🏆</div>
+    <h2>¡Predicciones enviadas!</h2>
+    <p id="succ-msg">Tus predicciones quedaron registradas en Google Sheets. ¡Buena suerte!</p>
+    <button class="btn btn-gray" onclick="showSc('sc-grupos')" style="margin-top:1.5rem;width:auto;padding:.65rem 2rem">Ver mis predicciones</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+const GRUPOS=[
+  {n:'A',e:['Mexico','Korea','Czechia','South Africa'],p:[
+    {e1:'Mexico',e2:'South Africa',c:'Mexico City',f:'11 Jun'},
+    {e1:'Korea',e2:'Czechia',c:'Guadalajara',f:'11 Jun'},
+    {e1:'Czechia',e2:'South Africa',c:'Atlanta',f:'15 Jun'},
+    {e1:'Mexico',e2:'Korea',c:'Guadalajara',f:'15 Jun'},
+    {e1:'Czechia',e2:'Mexico',c:'Mexico City',f:'19 Jun'},
+    {e1:'South Africa',e2:'Korea',c:'Monterrey',f:'19 Jun'}]},
+  {n:'B',e:['Canada','Qatar','Switzerland','Bosnia & Herz.'],p:[
+    {e1:'Canada',e2:'Bosnia & Herz.',c:'Toronto',f:'12 Jun'},
+    {e1:'Qatar',e2:'Switzerland',c:'San Francisco',f:'13 Jun'},
+    {e1:'Switzerland',e2:'Bosnia & Herz.',c:'Los Angeles',f:'15 Jun'},
+    {e1:'Canada',e2:'Qatar',c:'Vancouver',f:'15 Jun'},
+    {e1:'Switzerland',e2:'Canada',c:'Vancouver',f:'19 Jun'},
+    {e1:'Bosnia & Herz.',e2:'Qatar',c:'Seattle',f:'19 Jun'}]},
+  {n:'C',e:['Brazil','Morocco','Scotland','Haiti'],p:[
+    {e1:'Haiti',e2:'Scotland',c:'Boston',f:'13 Jun'},
+    {e1:'Brazil',e2:'Morocco',c:'New York',f:'13 Jun'},
+    {e1:'Brazil',e2:'Haiti',c:'Philadelphia',f:'16 Jun'},
+    {e1:'Scotland',e2:'Morocco',c:'Boston',f:'16 Jun'},
+    {e1:'Scotland',e2:'Brazil',c:'Miami',f:'19 Jun'},
+    {e1:'Morocco',e2:'Haiti',c:'Atlanta',f:'19 Jun'}]},
+  {n:'D',e:['USA','Australia','Türkiye','Paraguay'],p:[
+    {e1:'USA',e2:'Paraguay',c:'Los Angeles',f:'12 Jun'},
+    {e1:'Australia',e2:'Türkiye',c:'Vancouver',f:'13 Jun'},
+    {e1:'Türkiye',e2:'Paraguay',c:'San Francisco',f:'16 Jun'},
+    {e1:'USA',e2:'Australia',c:'Seattle',f:'16 Jun'},
+    {e1:'Türkiye',e2:'USA',c:'Los Angeles',f:'20 Jun'},
+    {e1:'Paraguay',e2:'Australia',c:'San Francisco',f:'20 Jun'}]},
+  {n:'E',e:["Côte d'Ivoire",'Ecuador','Germany','Curaçao'],p:[
+    {e1:"Côte d'Ivoire",e2:'Ecuador',c:'Philadelphia',f:'14 Jun'},
+    {e1:'Germany',e2:'Curaçao',c:'Houston',f:'14 Jun'},
+    {e1:'Germany',e2:"Côte d'Ivoire",c:'Toronto',f:'17 Jun'},
+    {e1:'Ecuador',e2:'Curaçao',c:'Kansas City',f:'17 Jun'},
+    {e1:'Curaçao',e2:"Côte d'Ivoire",c:'Philadelphia',f:'20 Jun'},
+    {e1:'Ecuador',e2:'Germany',c:'New York',f:'20 Jun'}]},
+  {n:'F',e:['Netherlands','Sweden','Japan','Tunisia'],p:[
+    {e1:'Netherlands',e2:'Japan',c:'Dallas',f:'14 Jun'},
+    {e1:'Sweden',e2:'Tunisia',c:'Monterrey',f:'14 Jun'},
+    {e1:'Netherlands',e2:'Sweden',c:'Houston',f:'17 Jun'},
+    {e1:'Tunisia',e2:'Japan',c:'Monterrey',f:'17 Jun'},
+    {e1:'Japan',e2:'Sweden',c:'Dallas',f:'20 Jun'},
+    {e1:'Tunisia',e2:'Netherlands',c:'Kansas City',f:'20 Jun'}]},
+  {n:'G',e:['Belgium','Egypt','IR Iran','New Zealand'],p:[
+    {e1:'IR Iran',e2:'New Zealand',c:'Los Angeles',f:'12 Jun'},
+    {e1:'Belgium',e2:'Egypt',c:'Seattle',f:'12 Jun'},
+    {e1:'Belgium',e2:'IR Iran',c:'Los Angeles',f:'16 Jun'},
+    {e1:'New Zealand',e2:'Egypt',c:'Vancouver',f:'16 Jun'},
+    {e1:'Egypt',e2:'IR Iran',c:'Seattle',f:'21 Jun'},
+    {e1:'New Zealand',e2:'Belgium',c:'Vancouver',f:'21 Jun'}]},
+  {n:'H',e:['Spain','Uruguay','Saudi Arabia','Cabo Verde'],p:[
+    {e1:'Saudi Arabia',e2:'Uruguay',c:'Miami',f:'12 Jun'},
+    {e1:'Spain',e2:'Cabo Verde',c:'Atlanta',f:'12 Jun'},
+    {e1:'Uruguay',e2:'Cabo Verde',c:'Miami',f:'16 Jun'},
+    {e1:'Spain',e2:'Saudi Arabia',c:'Atlanta',f:'16 Jun'},
+    {e1:'Cabo Verde',e2:'Saudi Arabia',c:'Houston',f:'21 Jun'},
+    {e1:'Uruguay',e2:'Spain',c:'Guadalajara',f:'21 Jun'}]},
+  {n:'I',e:['France','Norway','Senegal','Iraq'],p:[
+    {e1:'France',e2:'Senegal',c:'New York',f:'13 Jun'},
+    {e1:'Iraq',e2:'Norway',c:'Boston',f:'13 Jun'},
+    {e1:'Norway',e2:'Senegal',c:'New York',f:'17 Jun'},
+    {e1:'France',e2:'Iraq',c:'Philadelphia',f:'17 Jun'},
+    {e1:'Norway',e2:'France',c:'Boston',f:'21 Jun'},
+    {e1:'Senegal',e2:'Iraq',c:'Toronto',f:'21 Jun'}]},
+  {n:'J',e:['Argentina','Austria','Algeria','Jordan'],p:[
+    {e1:'Argentina',e2:'Algeria',c:'Kansas City',f:'13 Jun'},
+    {e1:'Austria',e2:'Jordan',c:'San Francisco',f:'13 Jun'},
+    {e1:'Argentina',e2:'Austria',c:'Dallas',f:'17 Jun'},
+    {e1:'Jordan',e2:'Algeria',c:'San Francisco',f:'17 Jun'},
+    {e1:'Algeria',e2:'Austria',c:'Kansas City',f:'22 Jun'},
+    {e1:'Jordan',e2:'Argentina',c:'Dallas',f:'22 Jun'}]},
+  {n:'K',e:['Portugal','Colombia','Uzbekistan','Congo DR'],p:[
+    {e1:'Portugal',e2:'Congo DR',c:'Houston',f:'14 Jun'},
+    {e1:'Uzbekistan',e2:'Colombia',c:'Mexico City',f:'14 Jun'},
+    {e1:'Portugal',e2:'Uzbekistan',c:'Houston',f:'18 Jun'},
+    {e1:'Colombia',e2:'Congo DR',c:'Guadalajara',f:'18 Jun'},
+    {e1:'Colombia',e2:'Portugal',c:'Miami',f:'22 Jun'},
+    {e1:'Congo DR',e2:'Uzbekistan',c:'Atlanta',f:'22 Jun'}]},
+  {n:'L',e:['England','Croatia','Ghana','Panama'],p:[
+    {e1:'Ghana',e2:'Panama',c:'Toronto',f:'14 Jun'},
+    {e1:'England',e2:'Croatia',c:'Dallas',f:'14 Jun'},
+    {e1:'England',e2:'Ghana',c:'Boston',f:'18 Jun'},
+    {e1:'Panama',e2:'Croatia',c:'Toronto',f:'18 Jun'},
+    {e1:'Panama',e2:'England',c:'New York',f:'22 Jun'},
+    {e1:'Croatia',e2:'Ghana',c:'Philadelphia',f:'22 Jun'}]}
+];
+
+const FLAGS={'Mexico':'🇲🇽','South Africa':'🇿🇦','Korea':'🇰🇷','Czechia':'🇨🇿','Canada':'🇨🇦','Bosnia & Herz.':'🇧🇦','Qatar':'🇶🇦','Switzerland':'🇨🇭','Haiti':'🇭🇹','Scotland':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Brazil':'🇧🇷','Morocco':'🇲🇦','USA':'🇺🇸','Paraguay':'🇵🇾','Australia':'🇦🇺','Türkiye':'🇹🇷',"Côte d'Ivoire":'🇨🇮','Ecuador':'🇪🇨','Germany':'🇩🇪','Curaçao':'🇨🇼','Netherlands':'🇳🇱','Japan':'🇯🇵','Sweden':'🇸🇪','Tunisia':'🇹🇳','IR Iran':'🇮🇷','New Zealand':'🇳🇿','Belgium':'🇧🇪','Egypt':'🇪🇬','Saudi Arabia':'🇸🇦','Uruguay':'🇺🇾','Spain':'🇪🇸','Cabo Verde':'🇨🇻','France':'🇫🇷','Senegal':'🇸🇳','Iraq':'🇮🇶','Norway':'🇳🇴','Argentina':'🇦🇷','Algeria':'🇩🇿','Austria':'🇦🇹','Jordan':'🇯🇴','Portugal':'🇵🇹','Congo DR':'🇨🇩','Uzbekistan':'🇺🇿','Colombia':'🇨🇴','Ghana':'🇬🇭','Panama':'🇵🇦','England':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Croatia':'🇭🇷'};
+
+const GAS_CODE=`function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.openById('TU_SPREADSHEET_ID');
+  var sheet = ss.getSheetByName('Respuestas') || ss.insertSheet('Respuestas');
+  if (sheet.getLastRow() === 0) {
+    var h = ['Timestamp','Nombre'];
+    ['A','B','C','D','E','F','G','H','I','J','K','L'].forEach(function(g){
+      for(var i=1;i<=6;i++) h.push('G'+g+'_P'+i+'_E1','G'+g+'_P'+i+'_E2');
+    });
+    sheet.appendRow(h);
+  }
+  var row = [data.timestamp, data.nombre];
+  Object.keys(data.resultados).sort().forEach(function(k){
+    var r=data.resultados[k];
+    row.push(r.g1!==undefined?r.g1:'', r.g2!==undefined?r.g2:'');
+  });
+  sheet.appendRow(row);
+  return ContentService
+    .createTextOutput(JSON.stringify({ok:true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+
+// STATE
+let nombre='', webAppUrl='', cg=0, cp=0, at=1;
+let RES={};
+
+// INIT
+function init(){
+  try{
+    const saved=JSON.parse(localStorage.getItem('polla2026')||'{}');
+    if(saved.nombre){nombre=saved.nombre;document.getElementById('inp-nombre').value=nombre;}
+    if(saved.url){webAppUrl=saved.url;document.getElementById('inp-url').value=webAppUrl;document.getElementById('url-saved').style.display='block';}
+    if(saved.res){RES=saved.res;}
+    // Always start at welcome so URL can be verified
+  }catch(e){}
+  checkStart();
+  document.getElementById('gas-code').textContent=GAS_CODE;
+}
+
+function resetApp(){
+  if(confirm('¿Borrar todos los datos y empezar de nuevo?')){
+    localStorage.removeItem('polla2026');
+    location.reload();
+  }
+}
+
+function save(){
+  try{localStorage.setItem('polla2026',JSON.stringify({nombre,url:webAppUrl,res:RES}));}catch(e){}
+}
+
+function saveUrl(){
+  webAppUrl=document.getElementById('inp-url').value.trim();
+  document.getElementById('url-saved').style.display=webAppUrl?'block':'none';
+  save();
+}
+
+function checkStart(){
+  document.getElementById('btn-start').disabled=!document.getElementById('inp-nombre').value.trim();
+}
+
+function startApp(){
+  nombre=document.getElementById('inp-nombre').value.trim();
+  webAppUrl=document.getElementById('inp-url').value.trim();
+  if(!nombre)return;
+  save();buildTabs();buildNumpad();renderPartido();showSc('sc-grupos');
+}
+
+function showSc(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function buildTabs(){
+  const c=document.getElementById('tabs');c.innerHTML='';
+  GRUPOS.forEach((g,i)=>{
+    const t=document.createElement('div');
+    t.className='tab'+(i===cg?' active':grupoCompleto(i)?' done':'');
+    t.id='tab-'+i;t.textContent='Gr. '+g.n;
+    t.onclick=()=>{cg=i;cp=0;renderPartido();updateTabs();};
+    c.appendChild(t);
+  });
+}
+
+function updateTabs(){
+  GRUPOS.forEach((_,i)=>{
+    const t=document.getElementById('tab-'+i);if(!t)return;
+    t.className='tab'+(i===cg?' active':grupoCompleto(i)?' done':'');
+  });
+}
+
+function grupoCompleto(gi){
+  return GRUPOS[gi].p.every((_,pi)=>{const r=RES[gi+'-'+pi];return r&&r.g1!==undefined&&r.g2!==undefined;});
+}
+
+function buildNumpad(){
+  const np=document.getElementById('numpad');np.innerHTML='';
+  [0,1,2,3,4,5,6,7,'✕',8,9,'OK'].forEach(n=>{
+    const b=document.createElement('div');b.className='np-btn';
+    if(n==='✕')b.classList.add('np-del');
+    else if(n==='OK')b.classList.add('np-ok');
+    b.textContent=n;b.onclick=()=>npPress(n);
+    np.appendChild(b);
+  });
+}
+
+function npPress(n){
+  const k=cg+'-'+cp;
+  if(!RES[k])RES[k]={};
+  if(n==='✕'){if(at===1)delete RES[k].g1;else delete RES[k].g2;}
+  else if(n==='OK'){
+    if(at===1&&RES[k].g1!==undefined)selTeam(2);
+    else if(at===2&&RES[k].g2!==undefined)navP(1);
+    return;
+  } else {
+    if(at===1){RES[k].g1=n;if(RES[k].g2===undefined)selTeam(2);}
+    else RES[k].g2=n;
+  }
+  save();renderScore();renderClasif();updateProg();updateTabs();
+}
+
+function selTeam(t){
+  at=t;
+  document.getElementById('pl1').className='pill'+(t===1?' active':'');
+  document.getElementById('pl2').className='pill'+(t===2?' active':'');
+  const p=GRUPOS[cg].p[cp];
+  document.getElementById('np-team').textContent=t===1?p.e1:p.e2;
+  renderScore();
+}
+
+function renderPartido(){
+  const g=GRUPOS[cg];const p=g.p[cp];
+  document.getElementById('top-title').textContent='Grupo '+g.n;
+  document.getElementById('top-sub').textContent='Partido '+(cp+1)+' de '+g.p.length;
+  document.getElementById('pt-num').textContent='Grupo '+g.n+' · Partido '+(cp+1)+'/'+g.p.length;
+  document.getElementById('pt-ciudad').textContent=p.c+' · '+p.f;
+  document.getElementById('fl1').textContent=FLAGS[p.e1]||'🏳';
+  document.getElementById('fl2').textContent=FLAGS[p.e2]||'🏳';
+  document.getElementById('tn1').textContent=p.e1;
+  document.getElementById('tn2').textContent=p.e2;
+  const isLast=cg===GRUPOS.length-1&&cp===GRUPOS[cg].p.length-1;
+  const btn=document.getElementById('btn-next');
+  btn.textContent=isLast?'Ver resumen →':'Siguiente →';
+  btn.className='nav-btn'+(isLast?' gold':' next');
+  btn.onclick=isLast?()=>irResumen():()=>navP(1);
+  document.getElementById('btn-prev').disabled=(cg===0&&cp===0);
+  selTeam(1);renderScore();renderClasif();updateProg();
+}
+
+function renderScore(){
+  const r=RES[cg+'-'+cp]||{};
+  const b1=document.getElementById('sb1'),b2=document.getElementById('sb2');
+  b1.textContent=r.g1!==undefined?r.g1:'—';
+  b2.textContent=r.g2!==undefined?r.g2:'—';
+  b1.className='score-box'+(at===1?' sel':'')+(r.g1!==undefined?' filled':'');
+  b2.className='score-box'+(at===2?' sel':'')+(r.g2!==undefined?' filled':'');
+}
+
+function navP(dir){
+  const g=GRUPOS[cg];
+  let np=cp+dir;
+  if(np<0){if(cg>0){cg--;cp=GRUPOS[cg].p.length-1;}else return;}
+  else if(np>=g.p.length){if(cg<GRUPOS.length-1){cg++;cp=0;}else{irResumen();return;}}
+  else cp=np;
+  updateTabs();
+  document.getElementById('tab-'+cg).scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  renderPartido();
+}
+
+function renderClasif(){
+  const g=GRUPOS[cg];
+  const st={};g.e.forEach(e=>{st[e]={pj:0,g:0,em:0,p:0,gf:0,gc:0,pts:0};});
+  g.p.forEach((p,pi)=>{
+    const r=RES[cg+'-'+pi];if(!r||r.g1===undefined||r.g2===undefined)return;
+    const a=Number(r.g1),b=Number(r.g2);
+    st[p.e1].pj++;st[p.e2].pj++;
+    st[p.e1].gf+=a;st[p.e1].gc+=b;st[p.e2].gf+=b;st[p.e2].gc+=a;
+    if(a>b){st[p.e1].g++;st[p.e1].pts+=3;st[p.e2].p++;}
+    else if(b>a){st[p.e2].g++;st[p.e2].pts+=3;st[p.e1].p++;}
+    else{st[p.e1].em++;st[p.e1].pts++;st[p.e2].em++;st[p.e2].pts++;}
+  });
+  const sorted=g.e.slice().sort((a,b)=>{
+    const da=st[a],db=st[b];
+    if(db.pts!==da.pts)return db.pts-da.pts;
+    if((db.gf-db.gc)!==(da.gf-da.gc))return(db.gf-db.gc)-(da.gf-da.gc);
+    return db.gf-da.gf;
+  });
+  const tb=document.getElementById('clasif-body');tb.innerHTML='';
+  sorted.forEach((e,i)=>{
+    const s=st[e];const tr=document.createElement('tr');
+    if(i<2)tr.className='clasif';
+    tr.innerHTML=`<td><span class="pb p${i+1}">${i+1}</span></td><td>${e}</td><td>${s.pj}</td><td>${s.g}</td><td>${s.em}</td><td>${s.p}</td><td>${s.gf}</td><td>${s.gc}</td><td><b>${s.pts}</b></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function updateProg(){
+  let f=0,t=0;
+  GRUPOS.forEach((g,gi)=>g.p.forEach((_,pi)=>{t++;const r=RES[gi+'-'+pi];if(r&&r.g1!==undefined&&r.g2!==undefined)f++;}));
+  document.getElementById('prog-fill').style.width=(f/t*100)+'%';
+  document.getElementById('top-sub').textContent=f+' / '+t+' partidos';
+}
+
+function irResumen(){
+  let f=0,t=0;
+  GRUPOS.forEach((g,gi)=>g.p.forEach((_,pi)=>{t++;const r=RES[gi+'-'+pi];if(r&&r.g1!==undefined&&r.g2!==undefined)f++;}));
+  document.getElementById('res-sub').textContent=f+' / '+t+' completados';
+  const c=document.getElementById('res-container');c.innerHTML='';
+  GRUPOS.forEach((g,gi)=>{
+    const div=document.createElement('div');div.className='rg';
+    const ok=grupoCompleto(gi);
+    div.innerHTML=`<div class="rg-head" onclick="toggleRg(this)"><span>Grupo ${g.n}</span><span class="rg-badge ${ok?'badge-ok':'badge-pen'}">${ok?'Completo':'Incompleto'}</span></div>`;
+    const body=document.createElement('div');body.className='rg-body';
+    if(!ok)body.classList.add('open');
+    g.p.forEach((p,pi)=>{
+      const r=RES[gi+'-'+pi]||{};const ok2=r.g1!==undefined&&r.g2!==undefined;
+      const row=document.createElement('div');row.className='rg-row';
+      row.innerHTML=`<span style="flex:1;font-size:12px">${FLAGS[p.e1]||'🏳'} ${p.e1} vs ${p.e2} ${FLAGS[p.e2]||'🏳'}</span><span class="chip ${ok2?'chip-ok':'chip-pen'}" onclick="editP(${gi},${pi})">${ok2?r.g1+' - '+r.g2:'Pendiente'}</span>`;
+      body.appendChild(row);
+    });
+    div.appendChild(body);c.appendChild(div);
+  });
+  showSc('sc-resumen');
+}
+
+function toggleRg(el){el.nextElementSibling.classList.toggle('open');}
+
+function editP(gi,pi){cg=gi;cp=pi;renderPartido();showSc('sc-grupos');document.getElementById('tab-'+gi).scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+
+function enviar(){
+  const url=webAppUrl||document.getElementById('inp-url')?.value?.trim();
+  const st=document.getElementById('send-status');
+  const btn=document.getElementById('btn-enviar');
+  if(!url){st.className='status st-err';st.textContent='Agrega la URL del Web App primero.';return;}
+  st.className='status st-send';st.textContent='Enviando predicciones…';
+  btn.disabled=true;
+  let f=0,t=0;
+  GRUPOS.forEach((g,gi)=>g.p.forEach((_,pi)=>{t++;const r=RES[gi+'-'+pi];if(r&&r.g1!==undefined&&r.g2!==undefined)f++;}));
+  const payload={nombre,timestamp:new Date().toISOString(),completados:f+'/'+t,resultados:{}};
+  GRUPOS.forEach((g,gi)=>g.p.forEach((p,pi)=>{
+    const r=RES[gi+'-'+pi]||{};
+    payload.resultados['G'+g.n+'_P'+(pi+1)+'_'+p.e1.replace(/[^\w]/g,'')+'_vs_'+p.e2.replace(/[^\w]/g,'')]={g1:r.g1,g2:r.g2,e1:p.e1,e2:p.e2};
+  }));
+  fetch(url,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)})
+    .then(()=>{
+      document.getElementById('succ-msg').textContent=`${nombre}, tus ${f} predicciones quedaron guardadas. ¡Buena suerte en el Mundial!`;
+      showSc('sc-success');
+    })
+    .catch(()=>{st.className='status st-err';st.textContent='Error al enviar. Verifica la URL e intenta de nuevo.';btn.disabled=false;});
+}
+
+function copyGas(){
+  navigator.clipboard.writeText(GAS_CODE).then(()=>{
+    const b=document.querySelector('[onclick="copyGas()"]');
+    b.textContent='¡Copiado!';setTimeout(()=>b.textContent='Copiar código',2000);
+  });
+}
+
+document.getElementById('send-nombre').textContent='';
+
+// Pre-fill send screen when navigating there
+document.getElementById('sc-send').addEventListener('transitionend',()=>{});
+const origShowSc=showSc;
+window.showSc=function(id){
+  if(id==='sc-send'){
+    document.getElementById('send-nombre').textContent='Listo, '+nombre;
+    let f=0,t=0;
+    GRUPOS.forEach((g,gi)=>g.p.forEach((_,pi)=>{t++;const r=RES[gi+'-'+pi];if(r&&r.g1!==undefined&&r.g2!==undefined)f++;}));
+    document.getElementById('send-stats').textContent=f+' de '+t+' partidos completados.';
+    document.getElementById('send-status').className='status';
+    document.getElementById('btn-enviar').disabled=false;
+  }
+  origShowSc(id);
+};
+
+init();
+</script>
+</body>
+</html>
